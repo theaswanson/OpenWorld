@@ -23,17 +23,30 @@
             await chatClient.SendMessageAsync("TheLegend27", "blah");
         }
 
-        private static async Task<string> TestAuthenticate()
+        private static async Task TestAuthenticate()
         {
-            await Console.Out.WriteAsync("Username:");
-            var username = await Console.In.ReadLineAsync();
-
-            await Console.Out.WriteAsync("Password:");
-            var password = await Console.In.ReadLineAsync();
+            var username = await Prompt("Username: ");
+            var password = await Prompt("Password: ");
 
             var authenticationClient = new AuthenticationClient();
 
-            return await authenticationClient.AuthenticateAsync(username, password);
+            var token = await authenticationClient.AuthenticateAsync(username, password);
+
+            await Console.Out.WriteLineAsync(token);
         }
+
+        private static async Task<string> Prompt(string prompt)
+        {
+            string? value = null;
+
+            while (value is null)
+            {
+                await Console.Out.WriteAsync(prompt);
+
+                value = await Console.In.ReadLineAsync();
+            }
+
+            return value;
+	    }
     }
 }

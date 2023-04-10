@@ -14,7 +14,7 @@ namespace OpenWorld.Server.Authentication
         };
 
         private const string PasswordHashingKey = "KEY1";
-        private const string SigningKey = "KEY2";
+        private const string SigningKey = "KEY2KEY2KEY2KEY2";
 
         private readonly Dictionary<AuthenticationErrorReason, string> _errorMessages = new()
         {

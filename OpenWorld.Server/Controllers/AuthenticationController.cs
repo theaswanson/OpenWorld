@@ -23,12 +23,14 @@ namespace OpenWorld.Server.Controllers
 
             if (!result.IsSuccessful)
             {
-                _logger.LogInformation("Authentication failure: {errorReason}", result.Error!.Reason);
+                _logger.LogInformation("Authentication failure for user '{user}': {errorReason}", userLogin.Username, result.Error!.Reason);
 
                 return BadRequest(result.Error.UserErrorMessage);
             }
 
             var token = _authenticationService.GenerateToken(result.Success!.User);
+
+            _logger.LogInformation("Authentication success for user '{user}'.", userLogin.Username);
 
             return Ok(token);
         }

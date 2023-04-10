@@ -16,21 +16,30 @@ namespace OpenWorld.Server.Authentication
         private const string PasswordHashingKey = "KEY1";
         private const string SigningKey = "KEY2";
 
+        private readonly Dictionary<AuthenticationErrorReason, string> _errorMessages = new()
+        {
+            { AuthenticationErrorReason.Unknown, "Unknown failure." },
+            { AuthenticationErrorReason.InvalidUsername, "Username is missing or invalid." },
+            { AuthenticationErrorReason.InvalidPassword, "Password is missing or invalid." },
+            { AuthenticationErrorReason.UserNotFound, "Incorrect username or password." },
+            { AuthenticationErrorReason.IncorrectPassword, "Incorrect username or password." },
+        };
+
         public async Task<AuthenticationResult> AuthenticateAsync(UserLogin userLogin)
         {
             if (string.IsNullOrWhiteSpace(userLogin.Username))
             {
-                return new AuthenticationResult(new AuthenticationError(AuthenticationErrorReason.InvalidUsername));
+                return ErrorResult(AuthenticationErrorReason.InvalidUsername);
             }
 
             if (string.IsNullOrWhiteSpace(userLogin.Password))
             {
-                return new AuthenticationResult(new AuthenticationError(AuthenticationErrorReason.InvalidPassword));
+                return ErrorResult(AuthenticationErrorReason.InvalidPassword);
             }
 
             if (!_users.ContainsKey(userLogin.Username))
             {
-                return new AuthenticationResult(new AuthenticationError(AuthenticationErrorReason.UserNotFound));
+                return ErrorResult(AuthenticationErrorReason.UserNotFound);
             }
 
             var user = _users[userLogin.Username];
@@ -39,7 +48,7 @@ namespace OpenWorld.Server.Authentication
 
             if (hashedPassword != user.PasswordHash)
             {
-                return new AuthenticationResult(new AuthenticationError(AuthenticationErrorReason.IncorrectPassword));
+                return ErrorResult(AuthenticationErrorReason.IncorrectPassword);
             }
 
             return new AuthenticationResult(new AuthenticationSuccess(user));
@@ -74,6 +83,23 @@ namespace OpenWorld.Server.Authentication
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private AuthenticationResult ErrorResult(AuthenticationErrorReason authenticationErrorReason)
+        {
+            var userErrorMessage = GetUserErrorMessage(authenticationErrorReason);
+
+            return new AuthenticationResult(new AuthenticationError(authenticationErrorReason, userErrorMessage));
+
+            string GetUserErrorMessage(AuthenticationErrorReason authenticationErrorReason)
+            {
+                if (!_errorMessages.ContainsKey(authenticationErrorReason))
+                {
+                    return "Unknown failure.";
+                }
+
+                return _errorMessages[authenticationErrorReason];
+            }
         }
     }
 }

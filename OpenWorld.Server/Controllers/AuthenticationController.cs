@@ -10,15 +10,6 @@ namespace OpenWorld.Server.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly ILogger<AuthenticationController> _logger;
 
-        private readonly Dictionary<AuthenticationErrorReason, string> _errorMessages = new()
-        {
-            { AuthenticationErrorReason.Unknown, "Unknown failure." },
-            { AuthenticationErrorReason.InvalidUsername, "Username is missing or invalid." },
-            { AuthenticationErrorReason.InvalidPassword, "Password is missing or invalid." },
-            { AuthenticationErrorReason.UserNotFound, "Invalid username or password." },
-            { AuthenticationErrorReason.IncorrectPassword, "Invalid username or password." },
-        };
-
         public AuthenticationController(IAuthenticationService authenticationService, ILogger<AuthenticationController> logger)
         {
             _authenticationService = authenticationService;
@@ -32,26 +23,14 @@ namespace OpenWorld.Server.Controllers
 
             if (!result.IsSuccessful)
             {
-                var errorMessage = GetErrorMessage(result.Error.Reason);
+                _logger.LogInformation("Authentication failure: {errorReason}", result.Error!.Reason);
 
-                _logger.LogInformation("Authentication failure: {errorReason}", result.Error.Reason);
-
-                return BadRequest(errorMessage);
+                return BadRequest(result.Error.UserErrorMessage);
             }
 
             var token = _authenticationService.GenerateToken(result.Success!.User);
 
             return Ok(token);
-
-            string GetErrorMessage(AuthenticationErrorReason authenticationErrorReason)
-            {
-                if (!_errorMessages.ContainsKey(authenticationErrorReason))
-                {
-                    return "Unknown failure.";
-                }
-
-                return _errorMessages[authenticationErrorReason];
-            }
         }
     }
 }

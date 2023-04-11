@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 
-namespace OpenWorld.Client
+namespace OpenWorld.Client.Authentication
 {
     internal class AuthenticationClient : IAuthenticationClient
     {

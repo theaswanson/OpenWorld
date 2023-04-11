@@ -1,4 +1,4 @@
-﻿namespace OpenWorld.Client
+﻿namespace OpenWorld.Client.Authentication
 {
     internal interface IAuthenticationClient
     {

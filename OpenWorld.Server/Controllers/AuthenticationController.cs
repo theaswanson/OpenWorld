@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenWorld.Server.Authentication;
+using OpenWorld.Server.Authentication.Models;
 
 namespace OpenWorld.Server.Controllers
 {

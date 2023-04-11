@@ -1,4 +1,6 @@
-﻿namespace OpenWorld.Client
+﻿using OpenWorld.Client.Authentication;
+
+namespace OpenWorld.Client
 {
     internal class Program
     {

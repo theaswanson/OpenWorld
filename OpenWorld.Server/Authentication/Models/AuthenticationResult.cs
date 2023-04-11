@@ -1,4 +1,4 @@
-﻿namespace OpenWorld.Server.Authentication
+﻿namespace OpenWorld.Server.Authentication.Models
 {
     public class AuthenticationResult
     {

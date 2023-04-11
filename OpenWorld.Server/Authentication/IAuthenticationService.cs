@@ -1,4 +1,6 @@
-﻿namespace OpenWorld.Server.Authentication
+﻿using OpenWorld.Server.Authentication.Models;
+
+namespace OpenWorld.Server.Authentication
 {
     public interface IAuthenticationService
     {

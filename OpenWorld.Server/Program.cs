@@ -9,6 +9,7 @@ namespace OpenWorld.Server
         {
             await Console.Out.WriteLineAsync("[OpenWorld Server] Starting...");
             await BuildApp(args).RunAsync();
+            await Console.Out.WriteLineAsync("[OpenWorld Server] Stopped.");
         }
 
         private static WebApplication BuildApp(string[] args)
@@ -24,6 +25,8 @@ namespace OpenWorld.Server
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddSingleton<IUserService, UserService>();
+            builder.Services.AddSingleton<IPasswordHashingService, PasswordHashingService>();
 
             var app = builder.Build();
 

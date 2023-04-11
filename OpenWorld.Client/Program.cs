@@ -13,7 +13,7 @@ namespace OpenWorld.Client
 
             await Console.Out.WriteLineAsync("[OpenWorld Client] Press any key to quit...");
             Console.ReadKey();
-            await Console.Out.WriteLineAsync("[OpenWorld Client] Stopping...");
+            await Console.Out.WriteLineAsync("[OpenWorld Client] Stopped.");
         }
 
         private static async Task SendTestMessage()

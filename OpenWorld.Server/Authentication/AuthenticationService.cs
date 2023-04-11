@@ -2,20 +2,17 @@
 using OpenWorld.Server.Authentication.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace OpenWorld.Server.Authentication
 {
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly Dictionary<string, User> _users = new()
-        {
-            { "admin", new User("admin", "79b890890374fcc41cd8643eeb8095f54b57607f271a43dcd6f43aaf4e445a164c47b116bde0b5f782b968cb15d734154da7eb0bac3fecc837cdf50f402b8a1c", "Administrator") }
-        };
+        private readonly IUserService _userService;
+        private readonly IPasswordHashingService _passwordHashingService;
+        private readonly ILogger<AuthenticationService> _logger;
 
-        private const string PasswordHashingKey = "KEY1";
-        private const string SigningKey = "KEY2KEY2KEY2KEY2";
+        private const string TokenSigningKey = "KEY2KEY2KEY2KEY2";
 
         private readonly Dictionary<AuthenticationErrorReason, string> _errorMessages = new()
         {
@@ -26,47 +23,48 @@ namespace OpenWorld.Server.Authentication
             { AuthenticationErrorReason.IncorrectPassword, "Incorrect username or password." },
         };
 
+        public AuthenticationService(
+            IUserService userService,
+            IPasswordHashingService passwordHashingService,
+            ILogger<AuthenticationService> logger)
+        {
+            _userService = userService;
+            _passwordHashingService = passwordHashingService;
+            _logger = logger;
+        }
+
         public async Task<AuthenticationResult> AuthenticateAsync(UserLogin userLogin)
         {
             if (string.IsNullOrWhiteSpace(userLogin.Username))
             {
-                return ErrorResult(AuthenticationErrorReason.InvalidUsername);
+                return Fail(userLogin, AuthenticationErrorReason.InvalidUsername);
             }
 
             if (string.IsNullOrWhiteSpace(userLogin.Password))
             {
-                return ErrorResult(AuthenticationErrorReason.InvalidPassword);
+                return Fail(userLogin, AuthenticationErrorReason.InvalidPassword);
             }
 
-            if (!_users.ContainsKey(userLogin.Username))
+            User? user = _userService.GetUser(userLogin.Username);
+
+            if (user is null)
             {
-                return ErrorResult(AuthenticationErrorReason.UserNotFound);
+                return Fail(userLogin, AuthenticationErrorReason.UserNotFound);
             }
 
-            var user = _users[userLogin.Username];
-
-            string hashedPassword = await GetHashedPassword(userLogin.Password);
+            string hashedPassword = await _passwordHashingService.HashPasswordAsync(userLogin.Password);
 
             if (hashedPassword != user.PasswordHash)
             {
-                return ErrorResult(AuthenticationErrorReason.IncorrectPassword);
+                return Fail(userLogin, AuthenticationErrorReason.IncorrectPassword);
             }
 
-            return new AuthenticationResult(new AuthenticationSuccess(user));
-
-            static async Task<string> GetHashedPassword(string password)
-            {
-                var hashAlgorithm = new HMACSHA512(Encoding.ASCII.GetBytes(PasswordHashingKey));
-
-                var hashBytes = await hashAlgorithm.ComputeHashAsync(new MemoryStream(Encoding.ASCII.GetBytes(password)));
-
-                return BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
-            }
+            return Success(userLogin, user);
         }
 
         public string GenerateToken(User user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenSigningKey));
 
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -86,21 +84,35 @@ namespace OpenWorld.Server.Authentication
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        private AuthenticationResult Success(UserLogin userLogin, User user)
+        {
+            _logger.LogDebug("Authenticated user '{user}'.", userLogin.Username);
+
+            return new AuthenticationResult(new AuthenticationSuccess(user));
+        }
+
+        private AuthenticationResult Fail(UserLogin userLogin, AuthenticationErrorReason authenticationErrorReason)
+        {
+            _logger.LogWarning("Authentication failure for user '{user}': {errorReason}", userLogin.Username, authenticationErrorReason);
+
+            return ErrorResult(authenticationErrorReason);
+        }
+
         private AuthenticationResult ErrorResult(AuthenticationErrorReason authenticationErrorReason)
         {
             var userErrorMessage = GetUserErrorMessage(authenticationErrorReason);
 
             return new AuthenticationResult(new AuthenticationError(authenticationErrorReason, userErrorMessage));
+        }
 
-            string GetUserErrorMessage(AuthenticationErrorReason authenticationErrorReason)
+        private string GetUserErrorMessage(AuthenticationErrorReason authenticationErrorReason)
+        {
+            if (!_errorMessages.ContainsKey(authenticationErrorReason))
             {
-                if (!_errorMessages.ContainsKey(authenticationErrorReason))
-                {
-                    return "Unknown failure.";
-                }
-
-                return _errorMessages[authenticationErrorReason];
+                return "Unknown failure.";
             }
+
+            return _errorMessages[authenticationErrorReason];
         }
     }
 }

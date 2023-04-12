@@ -12,6 +12,7 @@ namespace OpenWorld.Server.Authentication
         private readonly IPasswordHashingService _passwordHashingService;
         private readonly ILogger<AuthenticationService> _logger;
 
+        // TODO: store signing key in configuration
         private const string TokenSigningKey = "KEY2KEY2KEY2KEY2";
 
         private readonly Dictionary<AuthenticationErrorReason, string> _errorMessages = new()
@@ -74,9 +75,10 @@ namespace OpenWorld.Server.Authentication
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
+            // TODO: store issuer and audience in configuration
             var token = new JwtSecurityToken(
-                issuer: "TEST_ISSUER",
-                audience: "TEST_AUDIENCE",
+                issuer: "OpenWorld Authority",
+                audience: "OpenWorld Client",
                 claims,
                 expires: DateTime.UtcNow.AddMinutes(15),
                 signingCredentials: credentials);

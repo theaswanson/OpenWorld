@@ -1,12 +1,21 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using OpenWorld.Client.Authentication;
 
 namespace OpenWorld.Client
 {
     internal class ChatClient
     {
-        private HubConnection? _connection;
+        private readonly IAuthenticationService _authenticationService;
 
-        public async Task ConnectAsync(string url)
+        private HubConnection? _connection;
+        private string? _token = null;
+
+        public ChatClient(IAuthenticationService authenticationService)
+        {
+            _authenticationService = authenticationService;
+        }
+
+        public async Task ConnectAsync(string url, string username, string password)
         {
             if (_connection is not null)
             {
@@ -19,7 +28,10 @@ namespace OpenWorld.Client
             }
 
             _connection = new HubConnectionBuilder()
-                .WithUrl(url)
+                .WithUrl(url, options =>
+                {
+                    options.AccessTokenProvider = () => GetAccessToken(username, password);
+                })
                 .Build();
 
             ConfigureConnectionHandlers(_connection);
@@ -32,7 +44,7 @@ namespace OpenWorld.Client
             await Console.Out.WriteLineAsync("Connected.");
         }
 
-        public async Task SendMessageAsync(string user, string message)
+        public async Task SendMessageAsync(string message)
         {
             if (_connection is null)
             {
@@ -41,7 +53,7 @@ namespace OpenWorld.Client
 
             await Console.Out.WriteLineAsync("Sending message...");
 
-            await _connection.SendAsync("SendMessage", user, message);
+            await _connection.SendAsync("SendMessage", message);
 
             await Console.Out.WriteLineAsync("Sent.");
         }
@@ -82,6 +94,26 @@ namespace OpenWorld.Client
             {
                 await Console.Out.WriteLineAsync($"[ReceiveMessage] {user} {message}");
             });
+        }
+
+        private async Task<string?> GetAccessToken(string username, string password)
+        {
+            // TODO: check if token is expired
+            if (_token is not null)
+            {
+                return _token;
+            }
+
+            var result = await _authenticationService.AuthenticateAsync(username, password);
+
+            if (!result.IsSuccessful)
+            {
+                return null;
+            }
+
+            _token = result.Success!.Token;
+
+            return _token;
         }
     }
 }

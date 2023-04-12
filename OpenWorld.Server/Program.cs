@@ -60,6 +60,7 @@ namespace OpenWorld.Server
         {
             var loggerConfig = new LoggerConfiguration()
                 .MinimumLevel.Is(MinimumLogLevel)
+                //.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .WriteTo.Console(restrictedToMinimumLevel: ConsoleLogLevel(builder.Environment));
 
             if (!builder.Environment.IsDevelopment())

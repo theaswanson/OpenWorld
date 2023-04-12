@@ -93,7 +93,7 @@ namespace OpenWorld.Server.Authentication
 
         private AuthenticationResult Fail(UserLogin userLogin, AuthenticationErrorReason authenticationErrorReason)
         {
-            _logger.LogWarning("Authentication failure for user '{user}': {errorReason}", userLogin.Username, authenticationErrorReason);
+            _logger.LogDebug("Authentication failure for user '{user}': {errorReason}", userLogin.Username, authenticationErrorReason);
 
             return ErrorResult(authenticationErrorReason);
         }

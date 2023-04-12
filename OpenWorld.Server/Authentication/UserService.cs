@@ -26,7 +26,7 @@ namespace OpenWorld.Server.Authentication
 
             if (!successfullyFound)
             {
-                _logger.LogWarning("Failed to get user with username '{user}'.", username);
+                _logger.LogDebug("Failed to get user with username '{user}'.", username);
 
                 return null;
             }
@@ -49,7 +49,7 @@ namespace OpenWorld.Server.Authentication
 
             if (successfullyAdded)
             {
-                _logger.LogDebug("Added user '{user}'.", username);
+                _logger.LogInformation("Added user '{user}'.", username);
             }
             else
             {
@@ -68,7 +68,7 @@ namespace OpenWorld.Server.Authentication
 
             if (successfullyRemoved)
             {
-                _logger.LogDebug("Removed user '{user}'.", username);
+                _logger.LogInformation("Removed user '{user}'.", username);
             }
             else
             {

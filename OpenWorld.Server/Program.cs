@@ -1,5 +1,7 @@
 using OpenWorld.Server.Authentication;
 using OpenWorld.Server.Hubs;
+using Serilog;
+using Serilog.Events;
 
 namespace OpenWorld.Server
 {
@@ -7,14 +9,20 @@ namespace OpenWorld.Server
     {
         public static async Task Main(string[] args)
         {
-            await Console.Out.WriteLineAsync("[OpenWorld Server] Starting...");
-            await BuildApp(args).RunAsync();
-            await Console.Out.WriteLineAsync("[OpenWorld Server] Stopped.");
+            var app = BuildApp(args);
+
+            Log.Logger.Information("[OpenWorld Server] Starting...");
+
+            await app.RunAsync();
+
+            Log.Logger.Information("[OpenWorld Server] Stopped.");
         }
 
         private static WebApplication BuildApp(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            ConfigureSerilog(builder);
 
             // Add services to the container.
             builder.Services.AddSignalR();
@@ -46,6 +54,35 @@ namespace OpenWorld.Server
             app.MapHub<ChatHub>("/hubs/chat");
 
             return app;
+        }
+
+        private static void ConfigureSerilog(WebApplicationBuilder builder)
+        {
+            var loggerConfig = new LoggerConfiguration()
+                .MinimumLevel.Is(MinimumLogLevel)
+                .WriteTo.Console(restrictedToMinimumLevel: ConsoleLogLevel(builder.Environment));
+
+            if (!builder.Environment.IsDevelopment())
+            {
+                loggerConfig.WriteTo.File(
+                    "logs/server.log",
+                    restrictedToMinimumLevel: LogEventLevel.Information,
+                    rollingInterval: RollingInterval.Day);
+            }
+
+            Log.Logger = loggerConfig.CreateLogger();
+
+            builder.Logging.ClearProviders();
+            builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
+        }
+
+        private static LogEventLevel MinimumLogLevel => LogEventLevel.Information;
+
+        private static LogEventLevel ConsoleLogLevel(IHostEnvironment environment)
+        {
+            return environment.IsDevelopment()
+                ? LogEventLevel.Information
+                : LogEventLevel.Warning;
         }
     }
 }

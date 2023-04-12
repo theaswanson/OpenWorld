@@ -2,6 +2,6 @@
 {
     internal interface IAuthenticationClient
     {
-        Task<string> AuthenticateAsync(string username, string password);
+        Task<bool> AuthenticateAsync(string username, string password);
     }
 }

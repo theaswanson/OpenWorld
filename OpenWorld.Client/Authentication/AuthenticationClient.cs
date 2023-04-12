@@ -1,25 +1,42 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using OpenWorld.Client.Authentication.Models;
 
 namespace OpenWorld.Client.Authentication
 {
     internal class AuthenticationClient : IAuthenticationClient
     {
-        public async Task<string> AuthenticateAsync(string username, string password)
+        private readonly IAuthenticationService _authenticationService;
+
+        public AuthenticationClient(IAuthenticationService authenticationService)
         {
-            var httpClient = new HttpClient();
+            _authenticationService = authenticationService;
+        }
 
-            var response = await httpClient.PostAsync(
-                "https://localhost:7192/auth/login",
-                new StringContent(
-                    JsonSerializer.Serialize(new { Username = username, Password = password }),
-                    Encoding.UTF8,
-                    "application/json")
-                );
+        public async Task<bool> AuthenticateAsync(string username, string password)
+        {
+            var result = await _authenticationService.AuthenticateAsync(username, password);
 
-            response.EnsureSuccessStatusCode();
+            if (!result.IsSuccessful)
+            {
+                await Console.Out.WriteLineAsync(FailureMessage(result.Error!));
+                return false;
+            }
 
-            return await response.Content.ReadAsStringAsync();
+            // TODO: handle token
+            await Console.Out.WriteLineAsync("Logged in.");
+            await Console.Out.WriteLineAsync(result.Success!.Token);
+
+            return true;
+        }
+
+        private string FailureMessage(AuthenticationError error)
+        {
+            return error.Reason switch
+            {
+                AuthenticationErrorReason.Unknown => "Hmm, login failed. Please try again.",
+                AuthenticationErrorReason.GeneralFailure => $"{error.Message} Please try again.",
+                AuthenticationErrorReason.ServerError => "Login servers are offline. Please try again later.",
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 }

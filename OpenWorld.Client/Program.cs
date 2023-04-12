@@ -27,14 +27,17 @@ namespace OpenWorld.Client
 
         private static async Task TestAuthenticate()
         {
-            var username = await Prompt("Username: ");
-            var password = await Prompt("Password: ");
+            var success = false;
 
-            var authenticationClient = new AuthenticationClient();
+            while (!success)
+            {
+                var username = await Prompt("Username: ");
+                var password = await Prompt("Password: ");
 
-            var token = await authenticationClient.AuthenticateAsync(username, password);
+                var authenticationClient = new AuthenticationClient(new AuthenticationService());
 
-            await Console.Out.WriteLineAsync(token);
+                success = await authenticationClient.AuthenticateAsync(username, password);
+            }
         }
 
         private static async Task<string> Prompt(string prompt)
@@ -49,6 +52,6 @@ namespace OpenWorld.Client
             }
 
             return value;
-	    }
+        }
     }
 }

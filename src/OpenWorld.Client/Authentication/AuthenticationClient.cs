@@ -33,7 +33,7 @@ namespace OpenWorld.Client.Authentication
             return error.Reason switch
             {
                 AuthenticationErrorReason.Unknown => "Hmm, login failed. Please try again.",
-                AuthenticationErrorReason.GeneralFailure => $"{error.Message} Please try again.",
+                AuthenticationErrorReason.InvalidCredentials => $"{error.Message} Please try again.",
                 AuthenticationErrorReason.ServerError => "Login servers are offline. Please try again later.",
                 _ => throw new NotImplementedException(),
             };

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OpenWorld.Models.Authentication;
 using OpenWorld.Server.Authentication;
 using OpenWorld.Server.Authentication.Models;
 
@@ -22,12 +23,12 @@ namespace OpenWorld.Server.Controllers
 
             if (!result.IsSuccessful)
             {
-                return BadRequest(result.Error!.UserErrorMessage);
+                return BadRequest(new LoginErrorResponse(result.Error!.UserErrorMessage));
             }
 
             var token = _authenticationService.GenerateToken(result.Success!.User);
 
-            return Ok(token);
+            return Ok(new LoginSuccessResponse(token));
         }
     }
 }

@@ -8,8 +8,8 @@ namespace OpenWorld.Client
         {
             await Console.Out.WriteLineAsync("[OpenWorld Client] Started.");
 
-            await SendTestMessage();
-            //await TestAuthenticate();
+            //await SendTestMessage();
+            await TestAuthenticate();
 
             await Console.Out.WriteLineAsync("[OpenWorld Client] Press any key to quit...");
             Console.ReadKey();
@@ -18,7 +18,7 @@ namespace OpenWorld.Client
 
         private static async Task SendTestMessage()
         {
-            var chatClient = new ChatClient(new AuthenticationService());
+            var chatClient = new ChatClient(new AuthenticationService(new OpenWorldHttpClient()));
 
             var username = await Prompt("Username: ");
             var password = await Prompt("Password: ");
@@ -37,7 +37,7 @@ namespace OpenWorld.Client
                 var username = await Prompt("Username: ");
                 var password = await Prompt("Password: ");
 
-                var authenticationClient = new AuthenticationClient(new AuthenticationService());
+                var authenticationClient = new AuthenticationClient(new AuthenticationService(new OpenWorldHttpClient()));
 
                 success = await authenticationClient.AuthenticateAsync(username, password);
             }

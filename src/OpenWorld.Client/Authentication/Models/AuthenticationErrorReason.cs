@@ -3,7 +3,7 @@
     public enum AuthenticationErrorReason
     {
         Unknown,
-        GeneralFailure,
+        InvalidCredentials,
         ServerError
     }
 }

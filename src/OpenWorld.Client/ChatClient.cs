@@ -46,7 +46,7 @@ namespace OpenWorld.Client
 
         public async Task SendMessageAsync(string message)
         {
-            if (_connection is null)
+            if (_connection is null || _connection.State != HubConnectionState.Connected)
             {
                 throw new Exception("Not connected.");
             }

@@ -98,8 +98,7 @@ namespace OpenWorld.Client
 
         private async Task<string?> GetAccessToken(string username, string password)
         {
-            // TODO: check if token is expired
-            if (_token is not null)
+            if (_token is not null && _authenticationService.IsTokenValid(_token, DateTime.UtcNow))
             {
                 return _token;
             }

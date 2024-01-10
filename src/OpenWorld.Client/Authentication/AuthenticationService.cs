@@ -1,5 +1,7 @@
-﻿using OpenWorld.Client.Authentication.Models;
+﻿using Microsoft.IdentityModel.Tokens;
+using OpenWorld.Client.Authentication.Models;
 using OpenWorld.Models.Authentication;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 
@@ -50,6 +52,33 @@ namespace OpenWorld.Client.Authentication
             {
                 return new AuthenticationResult(new AuthenticationSuccess(httpResponse.Success!.Token));
             }
+        }
+
+        public bool IsTokenValid(string token, DateTime now)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            if (!tokenHandler.CanReadToken(token))
+            {
+                return false;
+            }
+
+            SecurityToken? securityToken;
+            try
+            {
+                securityToken = tokenHandler.ReadToken(token);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return IsTokenValid(securityToken, now);
+        }
+
+        public bool IsTokenValid(SecurityToken token, DateTime now)
+        {
+            return token.ValidFrom <= now && now <= token.ValidTo;
         }
     }
 }

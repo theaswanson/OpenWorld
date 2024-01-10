@@ -8,8 +8,8 @@ namespace OpenWorld.Client
         {
             await Console.Out.WriteLineAsync("[OpenWorld Client] Started.");
 
-            //await SendTestMessage();
-            await TestAuthenticate();
+            await SendTestMessage();
+            //await TestAuthenticate();
 
             await Console.Out.WriteLineAsync("[OpenWorld Client] Press any key to quit...");
             Console.ReadKey();
@@ -20,10 +20,15 @@ namespace OpenWorld.Client
         {
             var chatClient = new ChatClient(new AuthenticationService(new OpenWorldHttpClient()));
 
-            var username = await Prompt("Username: ");
-            var password = await Prompt("Password: ");
+            var connected = false;
 
-            await chatClient.ConnectAsync(new UriBuilder("https", "localhost", 7192, "/hubs/chat").ToString(), username, password);
+            while (!connected)
+            {
+                var username = await Prompt("Username: ");
+                var password = await Prompt("Password: ");
+
+                connected = await chatClient.ConnectAsync(new UriBuilder("https", "localhost", 7192, "/hubs/chat").ToString(), username, password);
+            }
 
             await chatClient.SendMessageAsync("blah");
         }

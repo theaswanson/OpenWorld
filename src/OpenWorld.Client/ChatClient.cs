@@ -15,33 +15,46 @@ namespace OpenWorld.Client
             _authenticationService = authenticationService;
         }
 
-        public async Task ConnectAsync(string url, string username, string password)
+        /// <returns>True if a successful connection was made, false otherwise.</returns>
+        public async Task<bool> ConnectAsync(string url, string username, string password)
         {
-            if (_connection is not null)
+            try
             {
-                if (_connection.State != HubConnectionState.Disconnected)
+                if (_connection is not null)
                 {
-                    await _connection.StopAsync();
+                    if (_connection.State != HubConnectionState.Disconnected)
+                    {
+                        await _connection.StopAsync();
+                    }
+
+                    await _connection.DisposeAsync();
                 }
 
-                await _connection.DisposeAsync();
+                _connection = new HubConnectionBuilder()
+                    .WithUrl(url, options =>
+                    {
+                        options.AccessTokenProvider = () => GetAccessToken(username, password);
+                    })
+                    .Build();
+
+                ConfigureConnectionHandlers(_connection);
+                ConfigureMessageHandlers(_connection);
+
+                await Console.Out.WriteLineAsync("Connecting...");
+
+                await _connection.StartAsync();
+
+                await Console.Out.WriteLineAsync("Connected.");
+
+                return true;
             }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync("Connection failed. Please try again.");
+                await Console.Out.WriteLineAsync(ex.ToString());
 
-            _connection = new HubConnectionBuilder()
-                .WithUrl(url, options =>
-                {
-                    options.AccessTokenProvider = () => GetAccessToken(username, password);
-                })
-                .Build();
-
-            ConfigureConnectionHandlers(_connection);
-            ConfigureMessageHandlers(_connection);
-
-            await Console.Out.WriteLineAsync("Connecting...");
-
-            await _connection.StartAsync();
-
-            await Console.Out.WriteLineAsync("Connected.");
+                return false;
+            }
         }
 
         public async Task SendMessageAsync(string message)

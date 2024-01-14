@@ -4,6 +4,7 @@ using OpenWorld.Server.Authentication;
 using OpenWorld.Server.Hubs;
 using Serilog;
 using Serilog.Events;
+using Serilog.Extensions.Logging;
 using System.Text;
 
 namespace OpenWorld.Server;
@@ -12,7 +13,7 @@ public class Program
 {
     // TODO: store signing key in configuration
     private const string TokenSigningKey = "KEY2KEY2KEY2KEY2KEY2KEY2KEY2KEY2";
-    
+
     public static async Task Main(string[] args)
     {
         var app = BuildApp(args);
@@ -122,17 +123,28 @@ public class Program
         var loggerConfig = new LoggerConfiguration()
             .MinimumLevel.Is(MinimumLogLevel)
             //.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .WriteTo.Console(restrictedToMinimumLevel: ConsoleLogLevel(builder.Environment));
-
-        if (!builder.Environment.IsDevelopment())
-        {
-            loggerConfig.WriteTo.File(
-                "logs/server.log",
-                restrictedToMinimumLevel: LogEventLevel.Information,
-                rollingInterval: RollingInterval.Day);
-        }
+                .WriteTo
+                    .Console(restrictedToMinimumLevel: ConsoleLogLevel(builder.Environment))
+                .WriteTo
+                    .File(
+                        "logs/server.log",
+                        restrictedToMinimumLevel: LogEventLevel.Information,
+                        rollingInterval: RollingInterval.Day);
 
         Log.Logger = loggerConfig.CreateLogger();
+
+        var chatLoggerConfig = new LoggerConfiguration()
+            .MinimumLevel.Is(MinimumLogLevel)
+            //.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .WriteTo
+                    .Console(restrictedToMinimumLevel: ConsoleLogLevel(builder.Environment))
+                .WriteTo
+                    .File(
+                        "logs/chat.log",
+                        restrictedToMinimumLevel: LogEventLevel.Information,
+                        rollingInterval: RollingInterval.Day);
+
+        builder.Services.AddSingleton((serviceProvider) => new SerilogLoggerFactory(chatLoggerConfig.CreateLogger()).CreateLogger<ChatHub>());
 
         builder.Logging.ClearProviders();
         builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));

@@ -12,7 +12,7 @@ public class ChatHub(ILogger<ChatHub> logger) : Hub
     {
         var user = Context.UserIdentifier;
 
-        _logger.LogInformation("Got message: {user} {message}", user, message);
+        _logger.LogInformation("{user}: {message}", user, message);
 
         await Clients.All.SendAsync("ReceiveMessage", user, message);
     }

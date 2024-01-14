@@ -3,7 +3,7 @@ using OpenWorld.Client.Authentication.Models;
 
 namespace OpenWorld.Client.Authentication
 {
-    internal interface IAuthenticationService
+    public interface IAuthenticationService
     {
         Task<AuthenticationResult> AuthenticateAsync(string username, string password);
         bool IsTokenValid(string token, DateTime now);

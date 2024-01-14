@@ -3,7 +3,7 @@ using OpenWorld.Client.Authentication;
 
 namespace OpenWorld.Client
 {
-    internal class ChatClient
+    public class ChatClient
     {
         private readonly IAuthenticationService _authenticationService;
 

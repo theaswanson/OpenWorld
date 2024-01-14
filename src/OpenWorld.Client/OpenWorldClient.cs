@@ -1,15 +1,8 @@
-using OpenWorld.Client.Authentication;
-
 namespace OpenWorld.Client;
 
-public class OpenWorldClient
+public class OpenWorldClient(ChatClient chatClient)
 {
-    private readonly ChatClient _chatClient;
-
-    public OpenWorldClient(ChatClient chatClient)
-    {
-        _chatClient = chatClient;
-    }
+    private readonly ChatClient _chatClient = chatClient;
 
     public async Task SendTestMessage()
     {

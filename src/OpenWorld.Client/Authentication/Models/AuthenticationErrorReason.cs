@@ -1,9 +1,8 @@
-﻿namespace OpenWorld.Client.Authentication.Models
+﻿namespace OpenWorld.Client.Authentication.Models;
+
+public enum AuthenticationErrorReason
 {
-    public enum AuthenticationErrorReason
-    {
-        Unknown,
-        InvalidCredentials,
-        ServerError
-    }
+    Unknown,
+    InvalidCredentials,
+    ServerError
 }

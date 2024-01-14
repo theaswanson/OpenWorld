@@ -5,80 +5,79 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 
-namespace OpenWorld.Client.Authentication
+namespace OpenWorld.Client.Authentication;
+
+internal class AuthenticationService : IAuthenticationService
 {
-    internal class AuthenticationService : IAuthenticationService
+    private readonly IOpenWorldHttpClient _httpClient;
+
+    public AuthenticationService(IOpenWorldHttpClient httpClient)
     {
-        private readonly IOpenWorldHttpClient _httpClient;
+        _httpClient = httpClient;
+    }
 
-        public AuthenticationService(IOpenWorldHttpClient httpClient)
+    public async Task<AuthenticationResult> AuthenticateAsync(string username, string password)
+    {
+        var httpResponse = await _httpClient.PostAsync<LoginSuccessResponse, LoginErrorResponse>(
+            "https://localhost:7192/auth/login",
+            new StringContent(
+                JsonSerializer.Serialize(new { Username = username, Password = password }),
+                Encoding.UTF8,
+                "application/json")
+            );
+
+        return httpResponse.IsSuccessful
+            ? SuccessResult(httpResponse)
+            : ErrorResult(httpResponse);
+
+        static AuthenticationResult ErrorResult(
+            HttpResult<LoginSuccessResponse, LoginErrorResponse> httpResponse)
         {
-            _httpClient = httpClient;
-        }
-
-        public async Task<AuthenticationResult> AuthenticateAsync(string username, string password)
-        {
-            var httpResponse = await _httpClient.PostAsync<LoginSuccessResponse, LoginErrorResponse>(
-                "https://localhost:7192/auth/login",
-                new StringContent(
-                    JsonSerializer.Serialize(new { Username = username, Password = password }),
-                    Encoding.UTF8,
-                    "application/json")
-                );
-
-            return httpResponse.IsSuccessful
-                ? SuccessResult(httpResponse)
-                : ErrorResult(httpResponse);
-
-            static AuthenticationResult ErrorResult(
-                HttpResult<LoginSuccessResponse, LoginErrorResponse> httpResponse)
+            if (((int)httpResponse.StatusCode) >= 500)
             {
-                if (((int)httpResponse.StatusCode) >= 500)
-                {
-                    return new AuthenticationResult(
-                        new AuthenticationError(
-                            AuthenticationErrorReason.ServerError,
-                            "Server unavailable."));
-                }
-
                 return new AuthenticationResult(
                     new AuthenticationError(
-                        AuthenticationErrorReason.InvalidCredentials,
-                        httpResponse.Error!.Error));
+                        AuthenticationErrorReason.ServerError,
+                        "Server unavailable."));
             }
 
-            static AuthenticationResult SuccessResult(
-                HttpResult<LoginSuccessResponse, LoginErrorResponse> httpResponse)
-            {
-                return new AuthenticationResult(new AuthenticationSuccess(httpResponse.Success!.Token));
-            }
+            return new AuthenticationResult(
+                new AuthenticationError(
+                    AuthenticationErrorReason.InvalidCredentials,
+                    httpResponse.Error!.Error));
         }
 
-        public bool IsTokenValid(string token, DateTime now)
+        static AuthenticationResult SuccessResult(
+            HttpResult<LoginSuccessResponse, LoginErrorResponse> httpResponse)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            if (!tokenHandler.CanReadToken(token))
-            {
-                return false;
-            }
-
-            SecurityToken? securityToken;
-            try
-            {
-                securityToken = tokenHandler.ReadToken(token);
-            }
-            catch
-            {
-                return false;
-            }
-
-            return IsTokenValid(securityToken, now);
+            return new AuthenticationResult(new AuthenticationSuccess(httpResponse.Success!.Token));
         }
+    }
 
-        public bool IsTokenValid(SecurityToken token, DateTime now)
+    public bool IsTokenValid(string token, DateTime now)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        if (!tokenHandler.CanReadToken(token))
         {
-            return token.ValidFrom <= now && now <= token.ValidTo;
+            return false;
         }
+
+        SecurityToken? securityToken;
+        try
+        {
+            securityToken = tokenHandler.ReadToken(token);
+        }
+        catch
+        {
+            return false;
+        }
+
+        return IsTokenValid(securityToken, now);
+    }
+
+    public bool IsTokenValid(SecurityToken token, DateTime now)
+    {
+        return token.ValidFrom <= now && now <= token.ValidTo;
     }
 }

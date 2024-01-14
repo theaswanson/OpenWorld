@@ -1,7 +1,6 @@
-﻿namespace OpenWorld.Client.Authentication
+﻿namespace OpenWorld.Client.Authentication;
+
+internal interface IAuthenticationClient
 {
-    internal interface IAuthenticationClient
-    {
-        Task<bool> AuthenticateAsync(string username, string password);
-    }
+    Task<bool> AuthenticateAsync(string username, string password);
 }

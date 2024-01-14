@@ -1,7 +1,6 @@
-﻿namespace OpenWorld.Client
+﻿namespace OpenWorld.Client;
+
+internal interface IOpenWorldHttpClient
 {
-    internal interface IOpenWorldHttpClient
-    {
-        Task<HttpResult<TSuccess, TError>> PostAsync<TSuccess, TError>(string url, HttpContent body);
-    }
+    Task<HttpResult<TSuccess, TError>> PostAsync<TSuccess, TError>(string url, HttpContent body);
 }

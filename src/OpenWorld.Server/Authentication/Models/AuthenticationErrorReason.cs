@@ -1,11 +1,10 @@
-﻿namespace OpenWorld.Server.Authentication.Models
+﻿namespace OpenWorld.Server.Authentication.Models;
+
+public enum AuthenticationErrorReason
 {
-    public enum AuthenticationErrorReason
-    {
-        Unknown,
-        InvalidUsername,
-        InvalidPassword,
-        UserNotFound,
-        IncorrectPassword
-    }
+    Unknown,
+    InvalidUsername,
+    InvalidPassword,
+    UserNotFound,
+    IncorrectPassword
 }

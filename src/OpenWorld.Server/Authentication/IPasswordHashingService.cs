@@ -1,7 +1,6 @@
-﻿namespace OpenWorld.Server.Authentication
+﻿namespace OpenWorld.Server.Authentication;
+
+public interface IPasswordHashingService
 {
-    public interface IPasswordHashingService
-    {
-        Task<string> HashPasswordAsync(string password);
-    }
+    Task<string> HashPasswordAsync(string password);
 }

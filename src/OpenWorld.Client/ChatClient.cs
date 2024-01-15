@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using System.Net;
+using Microsoft.AspNetCore.SignalR.Client;
 using OpenWorld.Client.Authentication;
 
 namespace OpenWorld.Client;
@@ -7,11 +8,24 @@ public class ChatClient(IAuthenticationService authenticationService)
 {
     private readonly IAuthenticationService _authenticationService = authenticationService;
 
+    public HubConnectionState State => _connection?.State ?? HubConnectionState.Disconnected;
+
     private HubConnection? _connection;
-    private string? _token = null;
+    private string? _token;
 
     /// <returns>True if a successful connection was made, false otherwise.</returns>
-    public async Task<bool> ConnectAsync(string url, string username, string password)
+    public Task<bool> ConnectAsync(string url, string username, string password)
+    {
+        return ConnectAsync(url, () => GetAccessToken(username, password));
+    }
+
+    /// <returns>True if a successful connection was made, false otherwise.</returns>
+    public Task<bool> ConnectAsync(string url, string token)
+    {
+        return ConnectAsync(url, () => Task.FromResult<string?>(token));
+    }
+
+    private async Task<bool> ConnectAsync(string url, Func<Task<string?>> accessTokenProvider)
     {
         try
         {
@@ -28,7 +42,7 @@ public class ChatClient(IAuthenticationService authenticationService)
             _connection = new HubConnectionBuilder()
                 .WithUrl(url, options =>
                 {
-                    options.AccessTokenProvider = () => GetAccessToken(username, password);
+                    options.AccessTokenProvider = accessTokenProvider;
                 })
                 .Build();
 
@@ -42,6 +56,20 @@ public class ChatClient(IAuthenticationService authenticationService)
             await Console.Out.WriteLineAsync("Connected.");
 
             return true;
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                await Console.Out.WriteLineAsync("Invalid username or password. Please try again.");
+            }
+            else
+            {
+                await Console.Out.WriteLineAsync($"Connection failed. Please try again. ({ex.HttpRequestError})");
+                await Console.Out.WriteLineAsync(ex.ToString());
+            }
+
+            return false;
         }
         catch (Exception ex)
         {
@@ -59,11 +87,7 @@ public class ChatClient(IAuthenticationService authenticationService)
             throw new Exception("Not connected.");
         }
 
-        await Console.Out.WriteLineAsync("Sending message...");
-
         await _connection.SendAsync("SendMessage", message);
-
-        await Console.Out.WriteLineAsync("Sent.");
     }
 
     private static void ConfigureConnectionHandlers(HubConnection connection)
@@ -100,7 +124,7 @@ public class ChatClient(IAuthenticationService authenticationService)
     {
         connection.On<string, string>("ReceiveMessage", async (user, message) =>
         {
-            await Console.Out.WriteLineAsync($"[ReceiveMessage] {user} {message}");
+            await Console.Out.WriteLineAsync($"{user}: {message}");
         });
     }
 

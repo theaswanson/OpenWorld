@@ -18,10 +18,10 @@ internal class Program
 
         var client = serviceProvider.GetService<OpenWorldClient>();
 
-        await client!.SendTestMessage();
+        await client!.JoinChatroomAsync();
 
         await Console.Out.WriteLineAsync("[OpenWorld Client] Press any key to quit...");
-        Console.ReadKey();
+        Console.ReadKey(intercept: true);
         await Console.Out.WriteLineAsync("[OpenWorld Client] Stopped.");
     }
 

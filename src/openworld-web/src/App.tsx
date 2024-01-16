@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState } from 'react';
 import './App.css'
+import { HubConnectionBuilder, HubConnectionState } from "@microsoft/signalr";
+
+const buildConnection = () => {
+  const connection = new HubConnectionBuilder()
+    .withUrl("https://localhost:7192/hubs/chat")
+    .build();
+  
+  connection.on("ReceiveMessage", (user, message) => {
+    console.log(`${user}: ${message}`);
+  });
+
+  return connection;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  
+  const [connection, setConnection] = useState(buildConnection());
+
+  const connect = () => {
+    if (connection.state === HubConnectionState.Connected) {
+      return;
+    }
+    
+    connection.start()
+      .then(() => connection.invoke("SendMessage", "TestUser", "Hello world!"));
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <input type="text" placeholder='Username' value={username} onChange={(e) => setUsername(e.target.value)} />
+      <input type="text" placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} />
+      <button onClick={() => connect()}>Connect</button>
+    </div>
+  );
 }
 
 export default App

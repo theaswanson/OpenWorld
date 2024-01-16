@@ -1,5 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using OpenWorld.Server.Authentication.Models;
+using OpenWorld.Server.Users;
+using OpenWorld.Server.Users.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

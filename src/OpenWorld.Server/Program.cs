@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OpenWorld.Server.Authentication;
 using OpenWorld.Server.Hubs;
+using OpenWorld.Server.Users;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;

@@ -1,6 +1,7 @@
-﻿using OpenWorld.Server.Authentication.Models;
+﻿using OpenWorld.Server.Authentication;
+using OpenWorld.Server.Users.Models;
 
-namespace OpenWorld.Server.Authentication;
+namespace OpenWorld.Server.Users;
 
 public class UserService(
     IPasswordHashingService passwordHashingService,

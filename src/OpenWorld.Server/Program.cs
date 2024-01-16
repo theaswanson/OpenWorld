@@ -42,6 +42,7 @@ public class Program
 
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<IUserService, UserService>();
+        builder.Services.AddSingleton<IUserRepository, UserRepository>();
         builder.Services.AddSingleton<IPasswordHashingService, PasswordHashingService>();
 
         builder.Services.AddAuthorization(options =>

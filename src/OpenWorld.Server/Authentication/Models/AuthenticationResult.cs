@@ -1,12 +1,12 @@
 ﻿namespace OpenWorld.Server.Authentication.Models;
 
-public class AuthenticationResult
+public class AuthenticationResult : Result<AuthenticationSuccess, AuthenticationError>
 {
-    public bool IsSuccessful => Error is null;
-    public AuthenticationSuccess? Success { get; }
-    public AuthenticationError? Error { get; }
+    public AuthenticationResult(AuthenticationSuccess success) : base(success)
+    {
+    }
 
-    public AuthenticationResult(AuthenticationSuccess success) => Success = success;
-
-    public AuthenticationResult(AuthenticationError error) => Error = error;
+    public AuthenticationResult(AuthenticationError error) : base(error)
+    {
+    }
 }

@@ -1,10 +1,11 @@
-﻿using OpenWorld.Server.Users.Models;
+﻿using OpenWorld.Server.Authentication.Models;
+using OpenWorld.Server.Users.Models;
 
 namespace OpenWorld.Server.Users;
 
 public interface IUserService
 {
-    Task AddUser(string username, string password);
+    Task<RegistrationResult> AddUserAsync(string username, string password);
     User? GetUser(string username);
     void RemoveUser(string username);
 }

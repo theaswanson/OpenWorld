@@ -48,7 +48,10 @@ public class AuthenticationController(IAuthenticationService authenticationServi
             return BadRequest(new RegisterErrorResponse(result.Error!.UserErrorMessage));
         }
 
-        // TODO: include url to fetch user details
-        return Created();
+        var user = await _userService.GetUserAsync(userRegistration.Username);
+
+        var token = _authenticationService.GenerateToken(user!);
+
+        return Ok(new LoginSuccessResponse(token));
     }
 }

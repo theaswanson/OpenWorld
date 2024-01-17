@@ -6,6 +6,6 @@ namespace OpenWorld.Server.Users;
 public interface IUserService
 {
     Task<RegistrationResult> AddUserAsync(string username, string password);
-    User? GetUser(string username);
-    void RemoveUser(string username);
+    Task<User?> GetUserAsync(string username);
+    Task RemoveUserAsync(string username);
 }

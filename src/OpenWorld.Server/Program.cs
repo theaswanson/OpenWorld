@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using OpenWorld.Data.Users;
 using OpenWorld.Server.Authentication;
 using OpenWorld.Server.Hubs;
 using OpenWorld.Server.Users;
@@ -17,7 +18,7 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        var app = BuildApp(args);
+        var app = await BuildAppAsync(args);
 
         Log.Logger.Information("[OpenWorld Server] Starting...");
 
@@ -26,7 +27,7 @@ public class Program
         Log.Logger.Information("[OpenWorld Server] Stopped.");
     }
 
-    private static WebApplication BuildApp(string[] args)
+    private static async Task<WebApplication> BuildAppAsync(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -40,10 +41,9 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
-        builder.Services.AddSingleton<IUserService, UserService>();
-        builder.Services.AddSingleton<IUserRepository, UserRepository>();
-        builder.Services.AddSingleton<IPasswordHashingService, PasswordHashingService>();
+        await SqliteBaseRepository.InitializeAsync();
+
+        ConfigureServices(builder);
 
         builder.Services.AddAuthorization(options =>
         {
@@ -118,6 +118,14 @@ public class Program
         app.MapHub<ChatHub>("/hubs/chat");
 
         return app;
+    }
+
+    private static void ConfigureServices(WebApplicationBuilder builder)
+    {
+        builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
+        builder.Services.AddSingleton<IUserService, UserService>();
+        builder.Services.AddSingleton<IUserRepository, UserRepository>();
+        builder.Services.AddSingleton<IPasswordHashingService, PasswordHashingService>();
     }
 
     private static void ConfigureSerilog(WebApplicationBuilder builder)

@@ -8,11 +8,14 @@ using System.Text;
 
 namespace OpenWorld.Server.Authentication;
 
-public class AuthenticationService : IAuthenticationService
+public class AuthenticationService(
+    IUserService userService,
+    IPasswordHashingService passwordHashingService,
+    ILogger<AuthenticationService> logger) : IAuthenticationService
 {
-    private readonly IUserService _userService;
-    private readonly IPasswordHashingService _passwordHashingService;
-    private readonly ILogger<AuthenticationService> _logger;
+    private readonly IUserService _userService = userService;
+    private readonly IPasswordHashingService _passwordHashingService = passwordHashingService;
+    private readonly ILogger<AuthenticationService> _logger = logger;
 
     // TODO: store signing key in configuration
     private const string TokenSigningKey = "KEY2KEY2KEY2KEY2KEY2KEY2KEY2KEY2";
@@ -26,16 +29,6 @@ public class AuthenticationService : IAuthenticationService
         { AuthenticationErrorReason.IncorrectPassword, "Incorrect username or password." },
     };
 
-    public AuthenticationService(
-        IUserService userService,
-        IPasswordHashingService passwordHashingService,
-        ILogger<AuthenticationService> logger)
-    {
-        _userService = userService;
-        _passwordHashingService = passwordHashingService;
-        _logger = logger;
-    }
-
     public async Task<AuthenticationResult> AuthenticateAsync(UserLogin userLogin)
     {
         if (string.IsNullOrWhiteSpace(userLogin.Username))
@@ -48,7 +41,7 @@ public class AuthenticationService : IAuthenticationService
             return Fail(userLogin, AuthenticationErrorReason.InvalidPassword);
         }
 
-        User? user = _userService.GetUser(userLogin.Username);
+        User? user = await _userService.GetUserAsync(userLogin.Username);
 
         if (user is null)
         {

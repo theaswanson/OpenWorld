@@ -1,4 +1,5 @@
-﻿using OpenWorld.Server.Authentication;
+﻿using OpenWorld.Data.Users;
+using OpenWorld.Server.Authentication;
 using OpenWorld.Server.Authentication.Models;
 using OpenWorld.Server.Users.Models;
 
@@ -13,9 +14,9 @@ public class UserService(
     private readonly IPasswordHashingService _passwordHashingService = passwordHashingService;
     private readonly ILogger<UserService> _logger = logger;
 
-    public User? GetUser(string username)
+    public async Task<User?> GetUserAsync(string username)
     {
-        var (successfullyFound, user) = _userRepository.Get(username);
+        var (successfullyFound, user) = await _userRepository.GetAsync(username);
 
         if (!successfullyFound)
         {
@@ -26,12 +27,12 @@ public class UserService(
 
         _logger.LogDebug("Fetched user '{user}'.", username);
 
-        return user;
+        return new User(user!.Username, user.PasswordHash, user.Role);
     }
 
     public async Task<RegistrationResult> AddUserAsync(string username, string password)
     {
-        if (_userRepository.Get(username).Found)
+        if (await UserExistsAsync(username))
         {
             return new RegistrationResult(
                 new RegistrationError(
@@ -41,9 +42,9 @@ public class UserService(
 
         var hashedPassword = await _passwordHashingService.HashPasswordAsync(password);
 
-        var successfullyAdded = _userRepository.Create(username, hashedPassword);
+        var (successful, _) = await _userRepository.CreateAsync(username, hashedPassword, "User");
 
-        if (!successfullyAdded)
+        if (!successful)
         {
             _logger.LogError("Failed to add user with username '{user}'.", username);
 
@@ -58,14 +59,14 @@ public class UserService(
         return new RegistrationResult(new RegistrationSuccess(username));
     }
 
-    public void RemoveUser(string username)
+    public async Task RemoveUserAsync(string username)
     {
-        if (!_userRepository.Get(username).Found)
+        if (!await UserExistsAsync(username))
         {
             throw new Exception($"User does not exist with username '{username}'.");
         }
 
-        var successfullyRemoved = _userRepository.Delete(username);
+        var successfullyRemoved = await _userRepository.DeleteAsync(username);
 
         if (successfullyRemoved)
         {
@@ -75,5 +76,10 @@ public class UserService(
         {
             _logger.LogError("Failed to remove user '{user}'.", username);
         }
+    }
+
+    private async Task<bool> UserExistsAsync(string username)
+    {
+        return (await _userRepository.GetAsync(username)).Found;
     }
 }

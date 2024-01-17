@@ -12,7 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenWorld.Models", "OpenWorld.Models\OpenWorld.Models.csproj", "{BC561434-2680-42E9-8BB1-A9A8431B1C6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenWorld.Models", "OpenWorld.Models\OpenWorld.Models.csproj", "{BC561434-2680-42E9-8BB1-A9A8431B1C6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenWorld.Data", "OpenWorld.Data\OpenWorld.Data.csproj", "{5C55A9E6-DBBF-4CF2-878F-A8C7E8D748D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{BC561434-2680-42E9-8BB1-A9A8431B1C6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC561434-2680-42E9-8BB1-A9A8431B1C6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC561434-2680-42E9-8BB1-A9A8431B1C6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C55A9E6-DBBF-4CF2-878F-A8C7E8D748D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C55A9E6-DBBF-4CF2-878F-A8C7E8D748D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C55A9E6-DBBF-4CF2-878F-A8C7E8D748D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C55A9E6-DBBF-4CF2-878F-A8C7E8D748D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
